@@ -31,6 +31,15 @@ export function cloudinaryErrorMessage(err) {
   );
 }
 
+export function cloudinaryEnvSummary() {
+  return {
+    cloudName: envTrim("CLOUDINARY_CLOUD_NAME"),
+    hasApiKey: !!envTrim("CLOUDINARY_API_KEY"),
+    hasApiSecret: !!envTrim("CLOUDINARY_API_SECRET"),
+    hasUrl: !!envTrim("CLOUDINARY_URL"),
+  };
+}
+
 /** public_id fixo por aluno: alimentaif/alunos/<mongoId> */
 export function publicIdAlunoFoto(alunoId) {
   return `alimentaif/alunos/${alunoId}`;

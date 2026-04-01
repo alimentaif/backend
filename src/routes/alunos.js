@@ -7,6 +7,7 @@ import { authRequired } from "../middleware/auth.js";
 import { generateQrDataUrl } from "../utils/qrcode.js";
 import {
   cloudinaryErrorMessage,
+  cloudinaryEnvSummary,
   configureCloudinary,
   isCloudinaryConfigured,
   uploadAlunoFoto,
@@ -224,7 +225,10 @@ router.post(
       console.error(e);
       const msg = cloudinaryErrorMessage(e);
       const status = e?.http_code && Number.isFinite(Number(e.http_code)) ? Number(e.http_code) : 500;
-      res.status(status >= 400 && status < 600 ? status : 500).json({ message: msg });
+      res.status(status >= 400 && status < 600 ? status : 500).json({
+        message: msg,
+        cloudinary: cloudinaryEnvSummary(),
+      });
     }
   }
 );
