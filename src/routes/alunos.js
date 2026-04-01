@@ -224,8 +224,9 @@ router.post(
     } catch (e) {
       console.error(e);
       const msg = cloudinaryErrorMessage(e);
-      const status = e?.http_code && Number.isFinite(Number(e.http_code)) ? Number(e.http_code) : 500;
-      res.status(status >= 400 && status < 600 ? status : 500).json({
+      // Erros do Cloudinary podem vir com http_code 401, mas isso não é erro de sessão do usuário.
+      // Retornamos 502 para evitar logout indevido no frontend.
+      res.status(502).json({
         message: msg,
         cloudinary: cloudinaryEnvSummary(),
       });
