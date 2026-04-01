@@ -2,10 +2,10 @@ import XLSX from "xlsx";
 import AdmZip from "adm-zip";
 import Turma from "../models/Turma.js";
 import Aluno from "../models/Aluno.js";
-import { generateQrDataUrl } from "./qrcode.js";
 import { configureCloudinary, isCloudinaryConfigured, uploadAlunoFoto } from "./cloudinary.js";
 
 const MAX_LINHAS = 2000;
+const DEFAULT_MAX_EXEC_MS = 50_000;
 
 export function normKey(s) {
   return String(s ?? "")
@@ -95,6 +95,8 @@ function findImageBuffer(zipMap, matricula, hintFilename) {
  * @param {{ planilhaBuffer: Buffer, zipBuffer?: Buffer | null }} opts
  */
 export async function runBulkImport({ planilhaBuffer, zipBuffer }) {
+  const startedAt = Date.now();
+  const maxExecMs = Number(process.env.BULK_IMPORT_MAX_MS || DEFAULT_MAX_EXEC_MS);
   const rows = parsePlanilha(planilhaBuffer);
   if (rows.length > MAX_LINHAS) {
     return {
@@ -111,8 +113,18 @@ export async function runBulkImport({ planilhaBuffer, zipBuffer }) {
   const criados = [];
   const erros = [];
   let turmasCriadas = 0;
+  let parcial = false;
+
+  if (zipMap && isCloudinaryConfigured()) {
+    configureCloudinary();
+  }
 
   for (let i = 0; i < rows.length; i++) {
+    if (Date.now() - startedAt > maxExecMs) {
+      parcial = true;
+      break;
+    }
+
     const row = rows[i];
     const linha = i + 2;
 
@@ -161,14 +173,14 @@ export async function runBulkImport({ planilhaBuffer, zipBuffer }) {
     }
 
     try {
-      const qrCodeDataUrl = await generateQrDataUrl(matricula);
       const payload = {
         nome,
         matricula,
         curso: cursoTrim,
         turma: turmaId,
         anoEntrada,
-        qrCodeDataUrl,
+        // Evita gargalo de CPU em ambiente serverless; QR pode ser gerado sob demanda.
+        qrCodeDataUrl: "",
       };
       if (fotoUrlHttps) payload.fotoUrl = fotoUrlHttps;
 
@@ -183,7 +195,6 @@ export async function runBulkImport({ planilhaBuffer, zipBuffer }) {
           });
         } else {
           try {
-            configureCloudinary();
             const result = await uploadAlunoFoto(imageBuffer, String(a._id));
             a.fotoUrl = result.secure_url;
             await a.save();
@@ -211,6 +222,8 @@ export async function runBulkImport({ planilhaBuffer, zipBuffer }) {
 
   return {
     ok: true,
+    parcial,
+    processadas: criados.length + erros.length,
     criados: criados.length,
     turmasCriadas,
     alunos: criados,
