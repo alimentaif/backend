@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import User from "./models/User.js";
-import { configureCloudinary } from "./utils/cloudinary.js";
+import { configureCloudinary, isCloudinaryConfigured } from "./utils/cloudinary.js";
 
 let initPromise;
 
@@ -39,11 +39,7 @@ export function initializeServices() {
 
       await seedAdminOptional();
 
-      if (
-        process.env.CLOUDINARY_CLOUD_NAME &&
-        process.env.CLOUDINARY_API_KEY &&
-        process.env.CLOUDINARY_API_SECRET
-      ) {
+      if (isCloudinaryConfigured()) {
         configureCloudinary();
         console.log("Cloudinary configurado");
       } else {

@@ -6,6 +6,7 @@ import Turma from "../models/Turma.js";
 import { authRequired } from "../middleware/auth.js";
 import { generateQrDataUrl } from "../utils/qrcode.js";
 import {
+  cloudinaryErrorMessage,
   configureCloudinary,
   isCloudinaryConfigured,
   uploadAlunoFoto,
@@ -221,7 +222,9 @@ router.post(
       res.json({ message: "Foto enviada.", fotoUrl: result.secure_url, aluno: populated });
     } catch (e) {
       console.error(e);
-      res.status(500).json({ message: "Erro ao enviar foto para o Cloudinary." });
+      const msg = cloudinaryErrorMessage(e);
+      const status = e?.http_code && Number.isFinite(Number(e.http_code)) ? Number(e.http_code) : 500;
+      res.status(status >= 400 && status < 600 ? status : 500).json({ message: msg });
     }
   }
 );

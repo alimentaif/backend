@@ -1,19 +1,34 @@
 import { v2 as cloudinary } from "cloudinary";
 
+function envTrim(name) {
+  return String(process.env[name] ?? "").trim();
+}
+
 export function isCloudinaryConfigured() {
   return !!(
-    process.env.CLOUDINARY_CLOUD_NAME?.trim() &&
-    process.env.CLOUDINARY_API_KEY?.trim() &&
-    process.env.CLOUDINARY_API_SECRET?.trim()
+    envTrim("CLOUDINARY_CLOUD_NAME") &&
+    envTrim("CLOUDINARY_API_KEY") &&
+    envTrim("CLOUDINARY_API_SECRET")
   );
 }
 
 export function configureCloudinary() {
   cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET,
+    cloud_name: envTrim("CLOUDINARY_CLOUD_NAME"),
+    api_key: envTrim("CLOUDINARY_API_KEY"),
+    api_secret: envTrim("CLOUDINARY_API_SECRET"),
   });
+}
+
+export function cloudinaryErrorMessage(err) {
+  if (!err) return "Falha ao enviar foto para o Cloudinary.";
+  if (typeof err === "string") return err;
+  return (
+    err.message ||
+    err.error?.message ||
+    err.http_code && `Cloudinary HTTP ${err.http_code}` ||
+    "Falha ao enviar foto para o Cloudinary."
+  );
 }
 
 /** public_id fixo por aluno: alimentaif/alunos/<mongoId> */
