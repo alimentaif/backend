@@ -36,7 +36,6 @@ export function cloudinaryEnvSummary() {
     cloudName: envTrim("CLOUDINARY_CLOUD_NAME"),
     hasApiKey: !!envTrim("CLOUDINARY_API_KEY"),
     hasApiSecret: !!envTrim("CLOUDINARY_API_SECRET"),
-    hasUrl: !!envTrim("CLOUDINARY_URL"),
   };
 }
 
