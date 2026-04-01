@@ -54,7 +54,7 @@ function ensureCloudinary(res) {
   if (!isCloudinaryConfigured()) {
     res.status(503).json({
       message:
-        "Upload de fotos não configurado. Defina CLOUDINARY_URL ou (CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY e CLOUDINARY_API_SECRET) no .env do backend.",
+        "Upload de fotos não configurado. Defina CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY e CLOUDINARY_API_SECRET no .env do backend.",
     });
     return false;
   }

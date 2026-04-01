@@ -4,17 +4,7 @@ function envTrim(name) {
   return String(process.env[name] ?? "").trim();
 }
 
-function cloudNameFromUrl(url) {
-  const match = String(url).match(/@([^/?#]+)/);
-  return match?.[1] || "";
-}
-
-function hasCloudinaryUrl() {
-  return !!envTrim("CLOUDINARY_URL");
-}
-
 export function isCloudinaryConfigured() {
-  if (hasCloudinaryUrl()) return true;
   return !!(
     envTrim("CLOUDINARY_CLOUD_NAME") &&
     envTrim("CLOUDINARY_API_KEY") &&
@@ -23,11 +13,6 @@ export function isCloudinaryConfigured() {
 }
 
 export function configureCloudinary() {
-  const cloudinaryUrl = envTrim("CLOUDINARY_URL");
-  if (cloudinaryUrl) {
-    cloudinary.config({ cloudinary_url: cloudinaryUrl });
-    return;
-  }
   cloudinary.config({
     cloud_name: envTrim("CLOUDINARY_CLOUD_NAME"),
     api_key: envTrim("CLOUDINARY_API_KEY"),
@@ -47,10 +32,8 @@ export function cloudinaryErrorMessage(err) {
 }
 
 export function cloudinaryEnvSummary() {
-  const cloudinaryUrl = envTrim("CLOUDINARY_URL");
   return {
-    cloudName: envTrim("CLOUDINARY_CLOUD_NAME") || cloudNameFromUrl(cloudinaryUrl),
-    usingCloudinaryUrl: !!cloudinaryUrl,
+    cloudName: envTrim("CLOUDINARY_CLOUD_NAME"),
     hasApiKey: !!envTrim("CLOUDINARY_API_KEY"),
     hasApiSecret: !!envTrim("CLOUDINARY_API_SECRET"),
   };
