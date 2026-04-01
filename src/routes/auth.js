@@ -10,7 +10,7 @@ function signToken(user) {
   return jwt.sign(
     { sub: user._id.toString(), email: user.email },
     process.env.JWT_SECRET,
-    { expiresIn: "7d" }
+    { expiresIn: "30d" }
   );
 }
 
@@ -86,6 +86,19 @@ router.get("/me", authRequired, async (req, res) => {
   const user = await User.findById(req.user.id).lean();
   if (!user) return res.status(404).json({ message: "Usuário não encontrado." });
   res.json({ id: user._id, email: user.email });
+});
+
+/** Renovar token (refresh token) */
+router.post("/refresh", authRequired, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).lean();
+    if (!user) return res.status(404).json({ message: "Usuário não encontrado." });
+    const newToken = signToken(user);
+    res.json({ token: newToken, user: { id: user._id, email: user.email } });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ message: "Erro ao renovar token." });
+  }
 });
 
 export default router;
